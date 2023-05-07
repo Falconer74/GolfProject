@@ -13,5 +13,8 @@ UCLASS()
 class GOLFPROJECT_API AGolfProjectGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	AGolfProjectGameModeBase();
 	
 };
