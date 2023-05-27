@@ -40,6 +40,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="CameraController")
 	float ZoomSpeed = 20;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="CameraController")
+	bool bCameraMoving = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BallHit")
+	float MaxVectorLength = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BallHit")
+	float HitForce = 50000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PlayerInput")
+	bool bBallMoving = false;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -51,15 +63,17 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	float MousePosY;
-	float MousePosX;
-
+	FVector GetDesiredLocation() const;
+	inline bool IsBallMoving() const;
+	
 	void Hit();
+	void HitPreview() const;
+	
 	void StartMovingCamera();
 	void StopMovingCamera();
 
-	void PitchCamera(float Amount);
-	void YawCamera(float Amount);
+	void PitchCamera(const float Amount);
+	void YawCamera(const float Amount);
 
-	void Zoom(float X);
+	void Zoom(const float X);
 };
