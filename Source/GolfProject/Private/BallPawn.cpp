@@ -10,8 +10,11 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GolfProjectPlayerController.h"
+#include "GolfGameplayWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "GolfPlayerState.h"
 #include "Physics/ImmediatePhysics/ImmediatePhysicsShared/ImmediatePhysicsCore.h"
 
 // Sets default values
@@ -38,7 +41,26 @@ ABallPawn::ABallPawn()
 void ABallPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if(IsLocallyControlled() && GameplayWidgetClass)
+	{
+		AGolfProjectPlayerController* GolfController = GetController<AGolfProjectPlayerController>();
+		check(GolfController)
+		GameplayWidget = CreateWidget<UGolfGameplayWidget>(GolfController, GameplayWidgetClass);
+		check(GameplayWidget);
+		GameplayWidget->AddToPlayerScreen();
+	}
+}
+
+void ABallPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if(GameplayWidget)
+	{
+		GameplayWidget->RemoveFromParent();
+		GameplayWidget = nullptr;
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 // Called every frame
@@ -132,6 +154,10 @@ void ABallPawn::Hit()
 	UE_LOG(BallPawnCategory, Display, TEXT("Adding impulse to StaticMeshComponent: ( %f ; %f ; %f )"), ImpulseVector.X, ImpulseVector.Y, ImpulseVector.Z);
 	StaticMeshComponent->AddImpulse(ImpulseVector);
 	ArrowComponent->SetVisibility(false);
+
+	AGolfPlayerState* GolfPlayerState = Cast<AGolfPlayerState>(Controller->PlayerState);
+	GolfPlayerState->AddHit();
+	GameplayWidget->SetHitCount(GolfPlayerState->GetHitsCount());
 }
 
 void ABallPawn::HitPreview() const
@@ -143,7 +169,11 @@ void ABallPawn::HitPreview() const
 	ArrowComponent->SetWorldRotation(LookAtRotator);
 
 	UE_LOG(BallPawnCategory, Display, TEXT("Clamping Arrow with length %f to length %f"), (DesiredLocation - GetActorLocation()).Length(), MaxVectorLength);
-	ArrowComponent->ArrowLength = FMath::Clamp((DesiredLocation - GetActorLocation()).Length() / ArrowComponent->ArrowSize, 0, MaxVectorLength);
+
+	float Power = FMath::Clamp((DesiredLocation - GetActorLocation()).Length() / ArrowComponent->ArrowSize, 0, MaxVectorLength);
+	GameplayWidget->SetPower(Power, MaxVectorLength);
+	
+	ArrowComponent->ArrowLength = Power;
 	ArrowComponent->SetVisibility(false);
 	ArrowComponent->SetVisibility(true);
 	UE_LOG(BallPawnCategory, Display, TEXT("New arrow Length %f"), ArrowComponent->ArrowLength);
@@ -196,5 +226,4 @@ void ABallPawn::YawCamera(const float Amount)
 void ABallPawn::Zoom(const float X)
 {
 	SpringArmComponent->TargetArmLength += X * ZoomSpeed;
-	//UE_LOG(BallPawnCategory, Display, TEXT("Camera zoomed by: %f"), X);
 }
