@@ -20,7 +20,7 @@ void AHole::Goal(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, U
 	UE_LOG(HoleCategory, Display, TEXT("GOAL!"));
 
 	ABallPawn* BallPawn = Cast<ABallPawn>(OtherActor);
-	AGolfProjectPlayerController* Controller = Cast<AGolfProjectPlayerController>(BallPawn->Controller);
+	AGolfProjectPlayerControllerBase* Controller = Cast<AGolfProjectPlayerControllerBase>(BallPawn->Controller);
 
 	Cast<AGolfProjectGameModeBase>(GetWorld()->GetAuthGameMode())->Goal(BallPawn, Controller);
 	// OnGoal.Broadcast(BallPawn, Controller);

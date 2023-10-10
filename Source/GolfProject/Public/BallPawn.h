@@ -12,6 +12,8 @@ class UArrowComponent;
 
 DEFINE_LOG_CATEGORY_STATIC(BallPawnCategory, All, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBallStatusChanged, ABallPawn*, Ball);
+
 UCLASS()
 class GOLFPROJECT_API ABallPawn : public APawn
 {
@@ -20,6 +22,10 @@ class GOLFPROJECT_API ABallPawn : public APawn
 public:
 	// Sets default values for this pawn's properties
 	ABallPawn();
+
+	FOnBallStatusChanged OnBallHit;
+	FOnBallStatusChanged OnBallStartMoving;
+	FOnBallStatusChanged OnBallStopMoving;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
@@ -36,12 +42,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* ArrowComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="CameraController")
-	float ZoomSpeed = 20;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="CameraController")
-	bool bCameraMoving = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="BallHit")
 	float MaxVectorLength = 50;
@@ -63,6 +63,9 @@ protected:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UFUNCTION()
+	virtual void ChangeArrowVisibility(ABallPawn* Ball);
+	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -70,18 +73,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-private:
-	FVector GetDesiredLocation() const;
-	inline bool IsBallMoving() const;
-	
-	void Hit();
-	void HitPreview() const;
-	
-	void StartMovingCamera();
-	void StopMovingCamera();
-
-	void PitchCamera(const float Amount);
-	void YawCamera(const float Amount);
-
+	void Hit(const FVector& DesiredLocation);
+	void HitPreview(const FVector& DesiredLocation) const;
 	void Zoom(const float X);
+
+	inline bool IsBallMoving() const;
+
+	UFUNCTION()
+	virtual void SetArrowVisibility(bool bVisible);
 };

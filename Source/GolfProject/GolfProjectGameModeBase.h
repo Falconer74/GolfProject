@@ -24,5 +24,5 @@ public:
 	virtual void StartPlay() override;
 
 	UFUNCTION()
-	void Goal(ABallPawn* Ball, AGolfProjectPlayerController* Controller);
+	void Goal(ABallPawn* Ball, AGolfProjectPlayerControllerBase* Controller);
 };

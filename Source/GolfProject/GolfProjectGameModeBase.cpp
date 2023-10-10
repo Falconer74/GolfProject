@@ -16,7 +16,7 @@ void AGolfProjectGameModeBase::StartPlay()
 	Super::StartPlay();
 }
 
-void AGolfProjectGameModeBase::Goal(ABallPawn* Ball, AGolfProjectPlayerController* Controller)
+void AGolfProjectGameModeBase::Goal(ABallPawn* Ball, AGolfProjectPlayerControllerBase* Controller)
 {
 	UE_LOG(GameModeBaseCategory, Display, TEXT("GOAL!!!"));
 }
