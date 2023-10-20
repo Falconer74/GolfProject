@@ -35,9 +35,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction> ToggleLookAroundAction = nullptr;
 
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	// TObjectPtr<UInputAction> ToggleOffLookAroundAction = nullptr;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UInputAction> ZoomAction = nullptr;
 	
@@ -60,6 +57,9 @@ public:
 	float CameraSensitivity = 1.0f;
 	
 protected:
+	TObjectPtr<class AGolfProjectHUDBase> GolfHUD = nullptr;
+	TObjectPtr<class AGolfPlayerState> GolfPlayerState = nullptr;
+	
 	UFUNCTION()
 	FVector      GetDesiredLocation(const float MouseX, const float MouseY) const;
 	
@@ -83,9 +83,13 @@ protected:
 
 	void         ToggleOnLookAround(const FInputActionInstance& InputActionInstance);
 	void         ToggleOffLookAround(const FInputActionInstance& InputActionInstance);
-	
-	virtual void OnPossess(APawn* aPawn) override;
-	virtual void OnUnPossess() override;
+
+	UFUNCTION()
+	void            BallHit(ABallPawn* Ball);
+	UFUNCTION()
+	void PowerChanged(ABallPawn* Ball, float Power, float MaxPower);
+	virtual void    OnPossess(APawn* aPawn) override;
+	virtual void    OnUnPossess() override;
 
 private:
 	GENERATED_BODY()

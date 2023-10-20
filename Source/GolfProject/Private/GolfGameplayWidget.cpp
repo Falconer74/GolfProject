@@ -23,8 +23,5 @@ void UGolfGameplayWidget::ResetHitCount()
 
 void UGolfGameplayWidget::SetHitCount(int Count)
 {
-	if(HitCount)
-	{
-		HitCount->SetText((FText::AsNumber(Count)));
-	}
+	HitCount->SetText((FText::AsNumber(Count)));
 }

@@ -14,13 +14,14 @@ class GOLFPROJECT_API UGolfGameplayWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
+protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UProgressBar* PowerBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UTextBlock* HitCount;
 
+public:
 	void SetPower(float Power, float MaxPower);
 
 	void ResetHitCount();

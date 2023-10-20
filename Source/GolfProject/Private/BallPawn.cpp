@@ -8,11 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "GolfProjectPlayerController.h"
-#include "GolfGameplayWidget.h"
-#include "Blueprint/UserWidget.h"
 #include "DrawDebugHelpers.h"
-#include "GolfPlayerState.h"
 
 // Sets default values
 ABallPawn::ABallPawn()
@@ -41,25 +37,10 @@ void ABallPawn::BeginPlay()
 
 	OnBallStartMoving.AddDynamic(this, &ABallPawn::ChangeArrowVisibility);
 	OnBallStopMoving.AddDynamic(this, &ABallPawn::ChangeArrowVisibility);
-
-	if(IsLocallyControlled() && GameplayWidgetClass)
-	{
-		AGolfProjectPlayerControllerBase* GolfController = GetController<AGolfProjectPlayerControllerBase>();
-		check(GolfController)
-		GameplayWidget = CreateWidget<UGolfGameplayWidget>(GolfController, GameplayWidgetClass);
-		check(GameplayWidget);
-		GameplayWidget->AddToPlayerScreen();
-	}
 }
 
 void ABallPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if(GameplayWidget)
-	{
-		GameplayWidget->RemoveFromParent();
-		GameplayWidget = nullptr;
-	}
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -80,7 +61,6 @@ void ABallPawn::Tick(float DeltaTime)
 	{
 		bBallMoving = true;
 
-		OnBallHit.Broadcast(this);
 		OnBallStartMoving.Broadcast(this);
 	}
 	else if(bBallMoving && !IsBallMoving())
@@ -119,14 +99,9 @@ void ABallPawn::Hit(const FVector& DesiredLocation)
 	StaticMeshComponent->AddImpulse(ImpulseVector, NAME_None, true);
 
 	OnBallHit.Broadcast(this);
-
-	// TODO Rewrite with delegates
-	AGolfPlayerState* GolfPlayerState = Cast<AGolfPlayerState>(Controller->PlayerState);
-	GolfPlayerState->AddHit();
-	GameplayWidget->SetHitCount(GolfPlayerState->GetHitsCount());
 }
 
-void ABallPawn::HitPreview(const FVector& DesiredLocation) const
+void ABallPawn::HitPreview(const FVector& DesiredLocation)
 {
 	const FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), DesiredLocation);
 	UE_LOG(BallPawnCategory, Display, TEXT("Look at rotator: ( %f ; %f ; %f )"), LookAtRotator.Yaw, LookAtRotator.Pitch, LookAtRotator.Roll);
@@ -135,7 +110,8 @@ void ABallPawn::HitPreview(const FVector& DesiredLocation) const
 	UE_LOG(BallPawnCategory, Display, TEXT("Clamping Arrow with length %f to length %f"), (DesiredLocation - GetActorLocation()).Length(), MaxVectorLength);
 
 	const float Power = FMath::Clamp((DesiredLocation - GetActorLocation()).Length() / ArrowComponent->ArrowSize, 0, MaxVectorLength);
-	GameplayWidget->SetPower(Power, MaxVectorLength);
+
+	OnPowerChanged.Broadcast(this, Power, MaxVectorLength);
 	
 	ArrowComponent->ArrowLength = Power;
 	ArrowComponent->SetVisibility(false);

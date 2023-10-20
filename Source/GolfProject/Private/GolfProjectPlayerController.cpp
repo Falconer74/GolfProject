@@ -5,6 +5,8 @@
 #include "BallPawn.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GolfPlayerState.h"
+#include "GolfProjectHUDBase.h"
 #include "Kismet/GameplayStatics.h"
 
 FVector AGolfProjectPlayerControllerBase::GetDesiredLocation(const float MouseX, const float MouseY) const
@@ -117,9 +119,26 @@ void AGolfProjectPlayerControllerBase::ToggleOffLookAround(const FInputActionIns
 	UE_LOG(GolfPlayerControllerCategory, Display, TEXT("Toggle look around: Completed"));
 }
 
+void AGolfProjectPlayerControllerBase::BallHit(ABallPawn* Ball)
+{
+	GolfPlayerState->AddHit();
+	GolfHUD->SetHitCounterValue(GolfPlayerState->GetHitsCount());
+}
+
+void AGolfProjectPlayerControllerBase::PowerChanged(ABallPawn* Ball, float Power, float MaxPower)
+{
+	GolfHUD->SetPowerBarValue(Power, MaxPower);
+}
+
 void AGolfProjectPlayerControllerBase::OnPossess(APawn* aPawn)
 {
 	Super::OnPossess(aPawn);
+
+	GolfHUD = Cast<AGolfProjectHUDBase>(GetHUD());
+	checkf(GolfHUD, TEXT("GolfHUD in AGolfProjectPlayerControllerBase::OnPossess(APawn* aPawn) is nullptr"));
+
+	GolfPlayerState = Cast<AGolfPlayerState>(PlayerState);
+	checkf(GolfPlayerState, TEXT("GolfPlayerState in AGolfProjectPlayerControllerBase::OnPossess(APawn* aPawn) is nullptr"));
 
 	SetShowMouseCursor(!bLookingAround);
 
@@ -174,6 +193,11 @@ void AGolfProjectPlayerControllerBase::OnPossess(APawn* aPawn)
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered,
 			this, &AGolfProjectPlayerControllerBase::Zoom);
 	}
+	
+	BallPawn->OnBallHit.AddDynamic(this, &AGolfProjectPlayerControllerBase::BallHit);
+	BallPawn->OnPowerChanged.AddDynamic(this, &AGolfProjectPlayerControllerBase::PowerChanged);
+
+	GolfHUD->ShowGameplayWidget();
 }
 
 void AGolfProjectPlayerControllerBase::OnUnPossess()
@@ -181,4 +205,6 @@ void AGolfProjectPlayerControllerBase::OnUnPossess()
 	Super::OnUnPossess();
 
 	EnhancedInputComponent->ClearActionBindings();
+
+	GolfHUD->HideGameplayWidget();
 }

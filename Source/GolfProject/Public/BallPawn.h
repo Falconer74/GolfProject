@@ -13,6 +13,7 @@ class UArrowComponent;
 DEFINE_LOG_CATEGORY_STATIC(BallPawnCategory, All, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBallStatusChanged, ABallPawn*, Ball);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPowerChanged, ABallPawn*, Ball, float, Power, float, MaxPower);
 
 UCLASS()
 class GOLFPROJECT_API ABallPawn : public APawn
@@ -26,6 +27,7 @@ public:
 	FOnBallStatusChanged OnBallHit;
 	FOnBallStatusChanged OnBallStartMoving;
 	FOnBallStatusChanged OnBallStopMoving;
+	FOnPowerChanged OnPowerChanged;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
@@ -52,12 +54,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PlayerInput")
 	bool bBallMoving = false;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UGolfGameplayWidget> GameplayWidgetClass;
-
-	UPROPERTY()
-	class UGolfGameplayWidget* GameplayWidget;
-
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -74,7 +70,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void Hit(const FVector& DesiredLocation);
-	void HitPreview(const FVector& DesiredLocation) const;
+	void HitPreview(const FVector& DesiredLocation);
 	void Zoom(const float X);
 
 	inline bool IsBallMoving() const;
