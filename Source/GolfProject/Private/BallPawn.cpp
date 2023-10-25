@@ -15,6 +15,9 @@ ABallPawn::ABallPawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	bReplicates = true;
+	SetReplicateMovement(true);
 
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
 	SetRootComponent(StaticMeshComponent);
@@ -22,12 +25,16 @@ ABallPawn::ABallPawn()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->SetIsReplicated(false);
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(SpringArmComponent);
+	CameraComponent->SetIsReplicated(false);
 
 	ArrowComponent = CreateDefaultSubobject<UArrowComponent>("ArrowComponent");
 	ArrowComponent->SetupAttachment(StaticMeshComponent);
+	ArrowComponent->SetVisibility(false);
+	ArrowComponent->SetIsReplicated(false);
 }
 
 // Called when the game starts or when spawned
@@ -35,8 +42,11 @@ void ABallPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnBallStartMoving.AddDynamic(this, &ABallPawn::ChangeArrowVisibility);
-	OnBallStopMoving.AddDynamic(this, &ABallPawn::ChangeArrowVisibility);
+	if(GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		OnBallStartMoving.AddDynamic(this, &ABallPawn::ChangeArrowVisibility);
+		OnBallStopMoving.AddDynamic(this, &ABallPawn::ChangeArrowVisibility);
+	}
 }
 
 void ABallPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -84,7 +94,7 @@ bool ABallPawn::IsBallMoving() const
 	return !(GetVelocity().IsNearlyZero());
 }
 
-void ABallPawn::Hit(const FVector& DesiredLocation)
+void ABallPawn::Hit_Implementation(const FVector& DesiredLocation)
 {
 	if(bBallMoving) return;
 

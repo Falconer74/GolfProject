@@ -87,9 +87,18 @@ protected:
 	UFUNCTION()
 	void            BallHit(ABallPawn* Ball);
 	UFUNCTION()
-	void PowerChanged(ABallPawn* Ball, float Power, float MaxPower);
+	void            PowerChanged(ABallPawn* Ball, float Power, float MaxPower);
+	
 	virtual void    OnPossess(APawn* aPawn) override;
 	virtual void    OnUnPossess() override;
+
+	UFUNCTION(Client, Reliable)
+	void PlayerControllerClientClean();
+
+	UNetDriver* GetNetDriverHelper() const;
+
+public:
+	virtual void AcknowledgePossession(APawn* P) override;
 
 private:
 	GENERATED_BODY()

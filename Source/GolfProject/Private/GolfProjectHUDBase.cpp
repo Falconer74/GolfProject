@@ -8,6 +8,9 @@
 
 void AGolfProjectHUDBase::ShowGameplayWidget()
 {
+	GEngine->AddOnScreenDebugMessage(5, 10.0f, FColor::Red,
+		FString::Printf(TEXT("HUDBase LocalRole: %s"), *UEnum::GetValueAsString(GetLocalRole())));
+	
 	AGolfProjectPlayerControllerBase* GolfController = Cast<AGolfProjectPlayerControllerBase>(GetOwningPlayerController());
 	checkf(GolfController, TEXT("GolfController in AGolfProjectHUDBase::ShowGameplayWidget() is nullptr"));
 	

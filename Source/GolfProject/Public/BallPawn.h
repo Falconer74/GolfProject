@@ -30,6 +30,9 @@ public:
 	FOnPowerChanged OnPowerChanged;
 
 protected:
+	// TODO
+	// Change static components to dynamic components in order to disable it on server side
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	USceneComponent* SceneComponent;
 
@@ -69,6 +72,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Server, Reliable)
 	void Hit(const FVector& DesiredLocation);
 	void HitPreview(const FVector& DesiredLocation);
 	void Zoom(const float X);
